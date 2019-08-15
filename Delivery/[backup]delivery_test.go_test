@@ -1,0 +1,47 @@
+package delivery
+
+import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func Test_Case1(t *testing.T) {
+	testGetGerageStatus(t)
+	testGetCarStatus(t)
+}
+
+func testGetGerageStatus(t *testing.T) {
+	body := bytes.NewBufferString("")
+	resp, err := http.NewRequest("GET", "/getgeragestatus?id_Gerage=1", body)
+	if err != nil {
+		t.Error("Connection Error: ", err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(GetGerageStatus)
+	handler.ServeHTTP(rr, resp)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Error("HTTP Error: ", status)
+	}
+}
+
+func testGetCarStatus(t *testing.T) {
+	body := bytes.NewBufferString("")
+	//resp := httptest.NewRecorder()
+	resp, err := http.NewRequest("POST", "/getCarStatus?id_car=2", body)
+	if err != nil {
+		t.Error("Connection Error: ", err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(GetCarStatus)
+	handler.ServeHTTP(rr, resp)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Error("HTTP Error: ", status)
+	}
+
+}

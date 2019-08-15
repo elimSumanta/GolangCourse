@@ -1,0 +1,159 @@
+package database
+
+import (
+	"database/sql"
+	"log"
+	"reflect"
+	"testing"
+
+	dbConfig "github.com/elim/GoCourses/DBConfig"
+	mod "github.com/elim/GoCourses/Model"
+)
+
+type gerageStatus struct {
+	stat []mod.GerageStatus
+}
+
+func TestGetCarData(t *testing.T) {
+	getCarByIDGerage(t)
+	getCarByCarID(t)
+}
+
+func getCarByIDGerage(t *testing.T) {
+
+	db, err := dbConfig.ExeConnection()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	test := []struct {
+		name         string
+		carIDGerage  string
+		DBConn       *sql.DB
+		expectedData []mod.GerageStatus
+		wantToError  bool
+	}{
+		{
+			name:        "Case 1 -> Good Case Get car status",
+			carIDGerage: "1",
+			DBConn:      db,
+			expectedData: []mod.GerageStatus{
+				mod.GerageStatus{
+					OwnerName: "Ceki",
+					CarName:   "J",
+					IDCar:     "1",
+				},
+				mod.GerageStatus{
+					OwnerName: "Ceko",
+					CarName:   "Kijang",
+					IDCar:     "2",
+				},
+			},
+			wantToError: false,
+		},
+		{
+			name:        "Case 2 -> Good Case Get car status",
+			carIDGerage: "2",
+			DBConn:      db,
+			expectedData: []mod.GerageStatus{
+				mod.GerageStatus{
+					OwnerName: "eko",
+					CarName:   "Vios",
+					IDCar:     "3",
+				},
+				mod.GerageStatus{
+					OwnerName: "deko",
+					CarName:   "Fortuner",
+					IDCar:     "4",
+				},
+				mod.GerageStatus{
+					OwnerName: "dekot",
+					CarName:   "Lancer",
+					IDCar:     "5",
+				},
+			},
+			wantToError: false,
+		},
+		{
+			name:         "Case 3 -> Good Case Get car status null data",
+			carIDGerage:  "10",
+			DBConn:       db,
+			expectedData: []mod.GerageStatus{},
+			wantToError:  false,
+		},
+	}
+
+	if err != nil {
+		t.Error("Connection Failed")
+	}
+	defer db.Close()
+	for _, tt := range test {
+		t.Run(tt.name, func(t *testing.T) {
+
+			repo := NewConnection(tt.DBConn)
+
+			result := repo.SelectCarByIDGerage(tt.carIDGerage)
+
+			if result == nil && !tt.wantToError {
+				t.Error("Data Empty")
+			}
+
+			if !reflect.DeepEqual(result, tt.expectedData) {
+				t.Error("Data not valid", result)
+			}
+		})
+	}
+}
+
+func getCarByCarID(t *testing.T) {
+	db, err := dbConfig.ExeConnection()
+	if err != nil {
+		t.Error("Connection Failed")
+	}
+
+	testCase := []struct {
+		name         string
+		idCar        string
+		DBConn       *sql.DB
+		expectedData []mod.GerageStatus
+		wantToError  bool
+	}{
+		{
+			name:   "Case 1 -> Get Car Data by ID Car",
+			idCar:  "1",
+			DBConn: db,
+			expectedData: []mod.GerageStatus{
+				{
+					OwnerName: "Ceki",
+					CarName:   "J",
+					IDCar:     "1",
+				},
+			},
+			wantToError: false,
+		},
+		{
+			name:         "Case 1 -> Get Car Data by ID Car null data",
+			idCar:        "10",
+			DBConn:       db,
+			expectedData: []mod.GerageStatus{},
+			wantToError:  false,
+		},
+	}
+	//defer db.Close()
+	for _, tt := range testCase {
+		t.Run(tt.name, func(t *testing.T) {
+
+			repo := NewConnection(tt.DBConn)
+			result := repo.SelectCarByIDCar(tt.idCar)
+
+			if result == nil {
+				t.Error("Data Empty")
+			}
+
+			if !reflect.DeepEqual(result, tt.expectedData) {
+				t.Error("Wrong Data", result)
+			}
+		})
+	}
+
+}
