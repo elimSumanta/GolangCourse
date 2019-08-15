@@ -1,15 +1,16 @@
 package delivery
 
 import (
-	model "github.com/elim/GoCourses/Model"
-	apiResource "github.com/elim/GoCourses/Repository/APIService"
-	dbResource "github.com/elim/GoCourses/Repository/Database"
-	serv "github.com/elim/GoCourses/Service"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	model "github.com/elim/GoCourses/Model"
+	apiResource "github.com/elim/GoCourses/Repository/APIService"
+	dbResource "github.com/elim/GoCourses/Repository/Database"
+	serv "github.com/elim/GoCourses/Service"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
@@ -92,23 +93,80 @@ func TestInitHTTPHandler_GetCarStatus(t *testing.T) {
 		services *serv.Service
 	}
 	type args struct {
-		w  http.ResponseWriter
-		r  *http.Request
-		ps httprouter.Params
+		id string
 	}
+
+	apiMock := &apiResource.RepoMock{
+		GetDetailDataFunc: func(id string) (res []model.DetailPosition) {
+			return []model.DetailPosition{
+				{
+					GarageName:   "Test1",
+					Longtitude:   "1000",
+					Latitude:     "1000",
+					PositionName: "A",
+				},
+			}
+		},
+	}
+	repoMock := &dbResource.RepositoryMock{
+		SelectCarByIDCarFunc: func(id string) (res []model.GerageStatus) {
+			return []model.GerageStatus{
+				{
+					OwnerName: "J",
+					CarName:   "Test",
+					IDCar:     "1",
+				},
+			}
+		},
+		SelectCarByIDGerageFunc: func(id string) (res []model.GerageStatus) { return nil },
+	}
+
+	servMock := serv.New(apiMock, repoMock)
+
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name         string
+		fields       fields
+		args         args
+		wantCode     int
+		wantResponse model.DetailCarStatus
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Case 1",
+			fields: fields{
+				services: servMock,
+			},
+			args: args{
+				id: "1",
+			},
+			wantCode: http.StatusOK,
+			wantResponse: model.DetailCarStatus{
+				OwnerName:    "J",
+				CarName:      "Test",
+				IDCar:        "1",
+				GarageName:   "Test1",
+				Longtitude:   "1000",
+				Latitude:     "1000",
+				PositionName: "A",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hanlder := &InitHTTPHandler{
 				services: tt.fields.services,
 			}
-			hanlder.GetCarStatus(tt.args.w, tt.args.r, tt.args.ps)
+
+			router := httprouter.New()
+			router.GET("/getCarStatus", hanlder.GetCarStatus)
+			recorder := httptest.NewRecorder()
+			request, _ := http.NewRequest("GET", fmt.Sprintf("/getCarStatus?id_car=%s", tt.args.id), nil)
+			router.ServeHTTP(recorder, request)
+
+			assert.Equal(t, recorder.Code, tt.wantCode, "error code")
+			var response model.DetailCarStatus
+			err := json.Unmarshal(recorder.Body.Bytes(), &response)
+			assert.NoError(t, err, "")
+			assert.Equal(t, tt.wantResponse, response, "error")
 		})
 	}
 }

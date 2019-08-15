@@ -1,10 +1,6 @@
 package service
 
 import (
-	mod "github.com/elim/GoCourses/Model"
-	model "github.com/elim/GoCourses/Model"
-	api "github.com/elim/GoCourses/Repository/APIService"
-	repo "github.com/elim/GoCourses/Repository/Database"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +8,11 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	mod "github.com/elim/GoCourses/Model"
+	model "github.com/elim/GoCourses/Model"
+	api "github.com/elim/GoCourses/Repository/APIService"
+	repo "github.com/elim/GoCourses/Repository/Database"
 
 	"github.com/tokopedia/officialstore-home/pkg/log"
 )
@@ -49,7 +50,7 @@ func TestService_GetCarByIDCar(t *testing.T) {
 				id: "",
 			},
 			want: mod.DetailCarStatus{
-				OwnerName:    "J",
+				OwnerName:    "",
 				CarName:      "",
 				IDCar:        "",
 				GarageName:   "",

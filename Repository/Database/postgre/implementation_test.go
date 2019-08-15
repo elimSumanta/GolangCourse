@@ -1,12 +1,12 @@
 package database
 
 import (
-	mod "github.com/elim/GoCourses/Model"
 	"database/sql"
 	"reflect"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	mod "github.com/elim/GoCourses/Model"
 )
 
 func TestDBResource_SelectCarByIDGerage(t *testing.T) {
@@ -94,6 +94,37 @@ func TestDBResource_SelectCarByIDGerage(t *testing.T) {
 
 			if got := DBRes.SelectCarByIDGerage(tt.args.idGerage); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DBResource.SelectCarByIDGerage() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDBResource_SelectCarByIDCar(t *testing.T) {
+	type fields struct {
+		conn                 *sql.DB
+		stmtGetCarByIDGerage *sql.Stmt
+		stmtGetCarByIDCar    *sql.Stmt
+	}
+	type args struct {
+		idCar string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []mod.GerageStatus
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			DBRes := &DBResource{
+				conn:                 tt.fields.conn,
+				stmtGetCarByIDGerage: tt.fields.stmtGetCarByIDGerage,
+				stmtGetCarByIDCar:    tt.fields.stmtGetCarByIDCar,
+			}
+			if got := DBRes.SelectCarByIDCar(tt.args.idCar); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DBResource.SelectCarByIDCar() = %v, want %v", got, tt.want)
 			}
 		})
 	}
